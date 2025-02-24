@@ -1,0 +1,139 @@
+{% extends "partials/base.html" %}
+{% block content %}
+{% if profile.role == "Recruiter" %}
+<div class="container">
+    <div class="row">
+        <!-- Left: Recruiter Profile Section -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <!-- Profile Picture -->
+                    <img src="{{ profile.pfp.url }}" alt="Profile Picture" class="rounded-circle mb-3" 
+                        style="width: 120px; height: 120px; object-fit: cover;">
+                    
+                    <!-- Username & Email -->
+                    <h4 class="mb-1">{{ profile.user.username }}</h4>
+                    <p class="text-muted">{{ profile.user.email }}</p>
+                    <!-- Follow Button -->
+                    {% if request.user == profile.user %}
+                    {% else %}
+                        <form method="POST" action={% url "follow" profile.user.username %}>
+                            {% csrf_token %}
+                            <button type="submit" class="btn {% if is_follow %}btn-danger{% else %}btn-primary{% endif %}">
+                                {% if is_follow %}
+                                    Unfollow
+                                {% else %}
+                                    Follow
+                                {% endif %}
+                            </button>
+                        </form>
+                    {% endif %}
+                    <!-- Bio -->
+                    {% if profile.bio %}
+                        <p class="text-muted">{{ profile.bio }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Jobs Posted by Recruiter -->
+        <div class="col-md-8">
+            <h2 class="mb-4">Jobs Posted by {{ profile.user.username }}</h2>
+
+            {% if posts %}
+                {% for post in posts %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <!-- Job Title & Delete Button -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'post_detail' post.id %}" class="text-decoration-none text-dark">
+                                <h4 class="mb-1">{{ post.title }}</h4>
+                            </a>
+
+                            {% if request.user == post.user %}
+                                <form method="post" action="{% url 'delete_post' post.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm delete-btn">
+                                        Delete
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+
+                        <!-- Job Details -->
+                        <p class="text-muted mb-0">
+                            Salary: <strong>{{ post.salary|default:"Not Disclosed" }}</strong> |
+                            Job Type: <strong>{{ post.job_type }}</strong> |
+                            Experience: <strong>{{ post.experience_level }}</strong>
+                        </p>
+                        
+                        <!-- Job Description Preview -->
+                        <p class="mt-2">{{ post.description|truncatewords:20 }}</p>
+
+                        <!-- View Job Button -->
+                        <a href="{% url 'post_detail' post.id %}" class="btn btn-primary btn-sm">View Job</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No jobs posted yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+{% elif profile.role == "Job Seeker" %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <!-- Profile Picture -->
+                        <img src="{{ profile.pfp.url }}" alt="Profile Picture" 
+                            class="rounded-circle mb-3" 
+                            style="width: 120px; height: 120px; object-fit: cover;">
+
+                        <!-- Username -->
+                        <h3 class="mb-1">{{ profile.user.username }}</h3>
+                        <p class="text-muted">{{ profile.user.email }}</p>
+
+                        <!-- Contact -->
+                        {% if profile.user.email %}
+                            <p><strong>Contact:</strong> {{ profile.phone }}</p>
+                        {% endif %}
+
+                        <!-- Location -->
+                        {% if profile.location %}
+                            <p><strong>Location:</strong> {{ profile.location }}</p>
+                        {% endif %}
+
+                        <!-- Education Qualification -->
+                        {% if profile.education_qualification %}
+                            <p><strong>Education:</strong> {{ profile.education_qualification }}</p>
+                        {% endif %}
+
+                        <!-- Skills -->
+                        {% if profile.skills %}
+                            <p><strong>Skills:</strong> {{ profile.skills }}</p>
+                        {% endif %}
+
+                        <!-- Bio -->
+                        {% if profile.bio %}
+                            <p class="text-muted">{{ profile.bio }}</p>
+                        {% endif %}
+                        
+                        <!-- Resume Download -->
+                        {% if profile.resume %}
+                            <a href="{{ profile.resume.url }}" class="btn btn-outline-primary btn-sm mt-2" download>
+                                Download Resume
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endif %}
+{% endblock %}

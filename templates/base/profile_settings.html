@@ -1,0 +1,79 @@
+{% extends "partials/base.html" %}
+{% block content %}
+
+<div class="container">
+    <h2 class="mb-4">Profile Settings</h2>
+    <form action="{% url 'profile_settings' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Profile Picture -->
+        <div class="mb-4 text-center">
+            <img src="{{ user.profile.pfp.url }}" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+            <div class="mt-2">
+                <label for="id_pfp" class="form-label">Change Profile Picture</label>
+                <input type="file" name="pfp" id="id_pfp" class="form-control">
+            </div>
+        </div>
+
+        <!-- Username (Readonly) -->
+
+        <div class="mb-3">
+            {% if request.user.profile.role == "Job Seeker" %}
+                <label for="id_username" class="form-label">Username</label>
+            {% elif request.user.profile.role == "Recruiter" %}
+                <label for="id_username" class="form-label">Company Name</label>
+            {% endif %}            
+                <input type="text" id="id_username" class="form-control" value="{{ user.username }}" readonly>
+        </div>
+
+        <!-- Email (Readonly) -->
+        <div class="mb-3">
+            <label for="id_email" class="form-label">Email</label>
+            <input type="email" id="id_email" class="form-control" value="{{ user.email }}" readonly>
+        </div>
+
+        <!-- Bio -->
+        <div class="mb-3">
+            <label for="id_bio" class="form-label">About</label>
+            <textarea name="bio" id="id_bio" class="form-control" rows="3">{{ user.profile.bio }}</textarea>
+        </div>
+        {% if request.user.profile.role == "Recruiter" %}
+        {% elif request.user.profile.role == "Job Seeker" %}
+            <!-- Education -->
+            <div class="mb-3">
+                <label for="id_education" class="form-label">Education</label>
+                <input type="text" name="education_qualification" id="id_education" class="form-control" value="{{ user.profile.education_qualification }}">
+            </div>
+
+            <!-- Skills -->
+            <div class="mb-3">
+                <label for="id_skills" class="form-label">Skills</label>
+                <input type="text" name="skills" id="id_skills" class="form-control" value="{{ user.profile.skills }}">
+            </div>
+            <!-- Phone -->
+            <div class="mb-3">
+                <label for="phone" class="form-label">Phone</label>
+                <input type="number" name="phone" id="phone" class="form-control" value="{{ user.profile.phone}}">
+            </div>
+
+            <!-- Location -->
+            <div class="mb-3">
+                <label for="id_location" class="form-label">Location</label>
+                <input type="text" name="location" id="id_location" class="form-control" value="{{ user.profile.location }}">
+            </div>
+
+            <!-- Resume -->
+            <div class="mb-3">
+                <label for="id_resume" class="form-label">Resume</label>
+                <input type="file" name="resume" id="id_resume" class="form-control">
+                {% if user.profile.resume %}
+                    <a href="{{ user.profile.resume.url }}" target="_blank" class="d-block mt-2">View Current Resume</a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+    </form>
+</div>
+{% endblock %}

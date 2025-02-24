@@ -1,0 +1,81 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+    <title>{% block title %}{% endblock title %}</title>
+    <style>
+
+      /* Ensure all table text remains black */
+      .table td, .table th {
+          color: black !important;
+      }
+  
+      /* Custom colors for different status */
+      .badge-applied {
+          color: black !important;
+          background-color: lightgray !important;
+      }
+  
+      .badge-under-review {
+          color: black !important;
+          background-color: yellow !important;
+      }
+  
+      .badge-shortlisted {
+          color: white !important;
+          background-color: green !important;
+      }
+  
+      .badge-rejected {
+          color: white !important;
+          background-color: red !important;
+      }
+    
+
+      /* Add enough padding to account for the fixed navbar height */
+      body {
+        padding-top: 70px; /* Adjust this value based on your navbar height */
+      }
+    </style>
+  </head>
+  <body>
+    {% include "partials/navbar.html" %}
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% comment %} {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %} {% endcomment %}
+
+
+    {% block content %}
+    
+    {% endblock content %}
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+  </body>
+</html>

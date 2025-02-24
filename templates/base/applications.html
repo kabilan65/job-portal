@@ -1,0 +1,93 @@
+{% extends 'partials/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">My Applications</h2>
+    
+    {% if applied_jobs %}
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Job Title</th>
+                {% if request.user.profile.role == "Recruiter" %}
+                    <th>Applicant</th>
+                {% elif request.user.profile.role == "Job Seeker" %}
+                    <th>Company</th>
+                {% endif %}
+                <th>Current Status</th>
+                {% if request.user.profile.role == "Recruiter" %}
+                    <th>Update Status</th>
+                {% endif %}
+                <th>Applied Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in applied_jobs %}
+            <tr>
+                <td>
+                    <a href={% url "post_detail" job.post.id %} class="job-link">
+                        {{ job.post.title }}
+                    </a>
+                </td>
+                {% if request.user.profile.role == "Recruiter" %}
+                    <td>
+                        <a href={% url "profile" job.user.username %} class="job-link">
+                            {{ job.user.username }}
+                        </a>
+                    </td>
+                {% elif request.user.profile.role == "Job Seeker" %}
+                    <td>
+                        <a href={% url "profile" job.post.user.username %} class="job-link">
+                            {{ job.post.user.username }}
+                        </a>    
+                    </td>
+                {% endif %}
+                <td>
+                    {% if job.application_status == "Applied" %}
+                        <span class="badge badge-applied">Applied</span>
+                    {% elif job.application_status == "Under review" %}
+                        <span class="badge badge-under-review">Under Review</span>
+                    {% elif job.application_status == "Shortlisted" %}
+                        <span class="badge badge-shortlisted">Shortlisted</span>
+                    {% elif job.application_status == "Rejected" %}
+                        <span class="badge badge-rejected">Rejected</span>
+                    {% endif %}
+                </td>
+                
+                {% if request.user.profile.role == "Job Seeker" %}
+                {% elif request.user.profile.role == "Recruiter" %}
+                    <td>
+                        <form method="post" action={% url "update_application_status" job.id %}>
+                            {% csrf_token %}
+                            <select name="status" class="form-select form-select-sm">
+                                <option value="Applied" {% if application.status == "Applied" %}selected{% endif %}>Applied</option>
+                                <option value="Under review" {% if application.status == "Under review" %}selected{% endif %}>Under Review</option>
+                                <option value="Shortlisted" {% if application.status == "Shortlisted" %}selected{% endif %}>Shortlisted</option>
+                                <option value="Rejected" {% if application.status == "Rejected" %}selected{% endif %}>Rejected</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary mt-2">Update</button>
+                        </form>
+                    </td>
+                {% endif %}
+                <td>{{ job.post.date_created|date:"F d, Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="text-center text-muted">You have not applied for any jobs yet.</p>
+    {% endif %}
+</div>
+
+<!-- Custom CSS -->
+<style>
+    .job-link {
+        color: inherit; /* Uses default text color */
+        text-decoration: none; /* Removes underline */
+    }
+    .job-link:hover {
+        text-decoration: underline; /* Underlines only on hover */
+    }
+</style>
+
+{% endblock %}

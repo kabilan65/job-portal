@@ -1,0 +1,87 @@
+{% extends "partials/base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Left: Job Posts -->
+        <div class="col-md-8">
+            <h2 class="mb-4">Results for "{{ query }}"</h2>
+            
+            <!-- Example Job Post -->
+            {% for post in search_results %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <!-- User Profile and Actions -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <!-- Profile Picture -->
+                            <a href="{% url 'profile' post.user.username %}">
+                                <img src="{{ post.user.profile.pfp.url }}" alt="Profile Picture" 
+                                     class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            </a>
+                            <div>
+                                <!-- Username -->
+                                <a href="{% url 'profile' post.user.username %}" class="text-decoration-none text-dark">
+                                    <h5 class="mb-0">{{ post.user.username }}</h5>
+                                </a>
+                                <small class="text-muted">Posted on {{ post.date_created|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Apply & Save Buttons -->
+                        <div class="d-flex align-items-center">
+                            {% if request.user.profile.role == "Job Seeker" %}
+                                {% if post.applied %}
+                                    <span class="btn btn-secondary me-2 disabled">Applied</span>
+                                {% else %}
+                                    <a href="{% url 'apply_for_job' post.id %}" class="btn btn-primary me-2">Apply Now</a>
+                                {% endif %}
+                            {% endif %}
+
+                            <!-- Save/Unsave Button -->
+                            <form method="post" action="{% url 'save_post' post.id %}" class="d-inline-block">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-secondary">
+                                    {% if post in save_post %}
+                                        Unsave
+                                    {% else %}
+                                        Save
+                                    {% endif %}
+                                </button>
+                            </form>
+
+                            <!-- Delete Button (Moved slightly to the right) -->
+                            {% if request.user == post.user %}
+                                <form method="post" action="{% url 'delete_post' post.id %}" class="d-inline-block ms-3">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger delete-btn">
+                                        Delete
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+            
+                    <!-- Job Title -->
+                    <a href="{% url 'post_detail' post.id %}" class="text-decoration-none text-dark">
+                        <h4 class="mb-0">{{ post.title }}</h4>
+                    </a>
+            
+                    <!-- Job Description -->
+                    <a href="{% url 'post_detail' post.id %}" class="text-decoration-none text-dark">
+                        <p class="mb-0">{{ post.description|truncatewords:30 }}</p>
+                    </a>
+                    <hr>
+                    <!-- Salary, Job Type, Experience Level (Displayed in a Single Line) -->
+                    <p class="text-muted mb-0">
+                        Salary: <strong>{{ post.salary|default:"Not Disclosed" }}</strong> |
+                        Job Type: <strong>{{ post.job_type|default:"N/A" }}</strong> |
+                        Experience: <strong>{{ post.experience_level|default:"N/A" }}</strong>
+                    </p>
+
+                </div>
+            </div>
+            {% endfor %}            
+        </div>
+    </div>
+</div>
+{% endblock %}

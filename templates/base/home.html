@@ -1,0 +1,156 @@
+{% extends "partials/base.html" %}
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <!-- Left: Job Posts -->
+        <div class="col-md-8">
+            <h2 class="mb-4">Job Posts</h2>
+
+            {% for post in posts %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <!-- User Profile, Username, Apply Button, and 3-dot Menu -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <!-- Profile Section -->
+                        <div class="d-flex align-items-center">
+                            <a href="{% url 'profile' post.user.username %}">
+                                <img src="{{ post.user.profile.pfp.url }}" alt="Profile Picture" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            </a>
+                            <div>
+                                <a href="{% url 'profile' post.user.username %}" class="text-decoration-none text-dark">
+                                    <h5 class="mb-0">{{ post.user.username }}</h5>
+                                </a>
+                                <small class="text-muted">Posted on {{ post.date_created|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Apply Button & 3-Dot Menu (Aligned Properly) -->
+                            <div class="d-flex align-items-center">
+                                {% if post.user.profile.role == "Recruiter" %}
+                                    {% if request.user.profile.role == "Job Seeker" %}
+                                        {% if post.applied %}
+                                            <span class="btn btn-secondary me-2 disabled">Applied</span>
+                                        {% else %}
+                                            <a href="{% url 'apply_for_job' post.id %}" class="btn btn-primary me-2">Apply Now</a>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    <form method="post" action="{% url 'save_post' post.id %}" class="d-inline-block">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-secondary me-3"> <!-- Added 'me-3' for spacing -->
+                                            {% if post in save_post %}
+                                                Unsave
+                                            {% else %}
+                                                Save
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                {% if request.user == post.user %}
+                                    <form method="post" action={% url "delete_post" post.id %} class="d-inline-block">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger delete-btn">
+                                            Delete
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                    </div>
+
+                    <!-- Job Title -->
+                    <a href="{% url 'post_detail' post.id %}" class="text-decoration-none text-dark">
+                        <h4 class="mb-0">{{ post.title }}</h4>
+                    </a>
+
+                    <!-- Job Description -->
+                    <a href="{% url 'post_detail' post.id %}" class="text-decoration-none text-dark">
+                        <p class="mb-0">{{ post.description|truncatewords:30 }}</p>
+                    </a>
+                    {% if post.user.profile.role == "Recruiter" %}
+                        <hr>
+                        <!-- Salary, Job Type, Experience Level (Displayed in a Single Line) -->
+                        <p class="text-muted mb-0">
+                            Location: <strong>{{ post.location|default:"Not Disclosed" }}</strong> |
+                            Salary: <strong>{{ post.salary|default:"Not Disclosed" }}</strong> |
+                            Job Type: <strong>{{ post.job_type|default:"N/A" }}</strong> |
+                            Experience: <strong>{{ post.experience_level|default:"N/A" }}</strong>
+                        </p>
+                    {% endif %}
+
+                    </div>
+                    <a href="{% url 'post_detail' post.id %}" class="btn btn-secondary btn-sm mt-2">
+                        Post a comment
+                    </a>                    
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if request.user.profile.role == "Recruiter" %}
+        <!-- Right: Post a New Job Form -->
+        <div class="col-md-4">
+            <h2 class="mb-4">Post a Job</h2>
+            <form action="{% url 'home' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Job Title -->
+                <div class="mb-3">
+                    <label for="job_title" class="form-label">Job Title</label>
+                    <input type="text" name="job_title" id="job_title" class="form-control" placeholder="Enter job title" required>
+                </div>
+
+                <!-- Job Description -->
+                <div class="mb-3">
+                    <label for="job_description" class="form-label">Job Description</label>
+                    <textarea name="job_description" id="job_description" class="form-control" rows="4" placeholder="Enter job description" required></textarea>
+                </div>
+
+                <!-- Salary -->
+                <div class="mb-3">
+                    <label for="salary" class="form-label">Salary (₹)</label>
+                    <input type="number" name="salary" id="salary" class="form-control" min="0" placeholder="Enter salary (e.g., 50000)">
+                </div>
+
+
+                <!-- Job Type -->
+                <div class="mb-3">
+                    <label for="job_type" class="form-label">Job Type</label>
+                    <select name="job_type" id="job_type" class="form-select" required>
+                        <option value="full-time">Full-time</option>
+                        <option value="part-time">Part-time</option>
+                        <option value="remote">Remote</option>
+                        <option value="internship">Internship</option>
+                    </select>
+                </div>
+
+                <!-- Experience Level -->
+                <div class="mb-3">
+                    <label for="experience_level" class="form-label">Experience Level</label>
+                    <select name="experience_level" id="experience_level" class="form-select" required>
+                        <option value="fresher">Fresher</option>
+                        <option value="1-3 years">1-3 years</option>
+                        <option value="4-6 years">4-6 years</option>
+                        <option value="7+ years">7+ years</option>
+                    </select>
+                </div>
+
+                <!-- Location -->
+                <div class="mb-3">
+                    <label for="location" class="form-label">Job Location</label>
+                    <select name="location" id="location" class="form-select" required>
+                        {% for value, label in location_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-success w-100">Post Job</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
